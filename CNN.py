@@ -7,6 +7,8 @@ import tensorflow as tf
 import pandas as pd
 import matplotlib.pyplot as plt
 
+tf.reset_default_graph()
+
 data = pd.read_csv('sign_mnist_train.csv', skiprows=1)
 test_data = pd.read_csv('sign_mnist_test.csv',skiprows=1)
 
@@ -19,7 +21,6 @@ print(final_data)
 print(final_test_labels)
 print(final_test_data)
 
-#play around with these things
 '''
 step1 = np.asarray(data.head(7))
 print(step1.shape)
@@ -48,8 +49,8 @@ sess.run((TheActualNetwork.train_operation, TheActualNetwork.accuracy_op), feed_
 
 h = 28
 w = 28
-epochs = 3500
-batch_size = 16
+epochs = 5000
+batch_size = 32
 num_classes = 26
 color_channels = 1
 final_data = final_data.reshape(-1, h, w, 1)
@@ -61,8 +62,8 @@ test_img = final_data[1:2, :]
 class TheActualNetwork:
     def __init__(self, h, w, color_channels, num_classes):
         self.image_placeholder = tf.placeholder(dtype=tf.float32, shape=[None, h, w, color_channels], name="final_data")
-        self.labels_placeholder = tf.placeholder(dtype=tf.float32, shape=[None], name = "final_labels")
-        conv_layer1 = tf.layers.conv2d(self.image_placeholder, filters=64, kernel_size=[2,2], padding='same', activation=tf.nn.relu)
+        self.labels_placeholder = tf.placeholder(dtype=tf.float32, shape=[None], name="final_labels")
+        conv_layer1 = tf.layers.conv2d(self.image_placeholder, filters=64, kernel_size=[2,2], padding='SAME', activation=tf.nn.relu)
         pool_layer1 = tf.layers.max_pooling2d(conv_layer1, pool_size=[2,2], strides=2)
         one_flat_boi = tf.layers.flatten(pool_layer1)
         dense_layer = tf.layers.dense(one_flat_boi, 1024, activation=tf.nn.relu)
@@ -78,14 +79,14 @@ class TheActualNetwork:
         self.train_operation = optimizer.minimize(loss=self.loss, global_step=tf.train.get_global_step())
 
 
-cnn = TheActualNetwork(28, 28, 1,  26)
+cnn = TheActualNetwork(28, 28, 1, 26)
 
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     sess.run(tf.local_variables_initializer())
     position = 0
-    while position > epochs:
-        sess.run((cnn.train_operation, cnn.accuracy), feed_dict={cnn.image_placeholder: final_data[epochs:epochs + batch_size],cnn.labels_placeholder: final_labels[epochs:epochs + batch_size]})
+    while position < epochs:
+        print(sess.run((cnn.train_operation, cnn.accuracy_op), feed_dict={cnn.image_placeholder: final_data[position:position + batch_size], cnn.labels_placeholder: final_labels[position:position + batch_size]}))
         position += batch_size
     print(sess.run(cnn.choice, feed_dict={cnn.image_placeholder: test_img}))
