@@ -2,12 +2,13 @@
 https://www.kaggle.com/soumikrakshit/sign-language-translation-cnn was used for reference
 '''
 
-import numpy as np
 import tensorflow as tf
 import pandas as pd
-import matplotlib.pyplot as plt
 
 tf.reset_default_graph()
+
+img_lower = 4
+img_upper = img_lower + 1
 
 data = pd.read_csv('sign_mnist_train.csv')
 test_data = pd.read_csv('sign_mnist_test.csv')
@@ -18,8 +19,8 @@ final_data = data.iloc[:, 1:].values
 final_labels = data.iloc[:, :1].values.flatten()
 
 final_data1 = data.iloc[:, :].values
-print(final_data1[2:3, :])
-print(final_data[2:3, :])
+print(final_data1[img_lower:img_upper, :])
+print(final_data[img_lower:img_upper, :])
 
 
 h = 28
@@ -30,7 +31,7 @@ steps = 20000
 batch_size = 32
 final_data = final_data.reshape(-1, h, w, 1)
 final_test_data = (-1, h, w, 1)
-test_img = final_data[2:3, :]
+test_img = final_data[img_lower:img_upper, :]
 epochs = 80
 
 
