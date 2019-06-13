@@ -18,20 +18,20 @@ final_data = data.iloc[:, 1:].values
 final_labels = data.iloc[:, :1].values.flatten()
 
 final_data1 = data.iloc[:, :].values
-print(final_data1[1:2, :])
-print(final_data[1:2, :])
+print(final_data1[2:3, :])
+print(final_data[2:3, :])
 
-#image height/width and other vars
+
 h = 28
 w = 28
-steps = 20000
-batch_size = 32
 num_classes = 26
 color_channels = 1
+steps = 20000
+batch_size = 32
 final_data = final_data.reshape(-1, h, w, 1)
 final_test_data = (-1, h, w, 1)
-test_img = final_data[1:2, :]
-epochs = 70
+test_img = final_data[2:3, :]
+epochs = 80
 
 
 class TheActualNetwork:
@@ -57,6 +57,11 @@ class TheActualNetwork:
 cnn = TheActualNetwork(28, 28, 1, 26)
 
 
+ans_to_text = {1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f', 7: 'g', 8: 'h', 9: 'i', 10: 'j', 11: 'k', 12: 'l', 13: 'm', 14: 'n', 15: 'o', 16: 'p', 17: 'q', 18: 'r', 19: 's', 20: 't', 21: 'u', 22: 'v', 23: 'w', 24: 'x', 25: 'y', 26: 'z' }
+nums_keys = ans_to_text.keys()
+
+
+saver = tf.train.Saver(max_to_keep=4)
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     sess.run(tf.local_variables_initializer())
@@ -70,6 +75,11 @@ with tf.Session() as sess:
             done_batches += 1
             position += batch_size
             stuff = sess.run((cnn.train_operation, cnn.accuracy_op), feed_dict={cnn.image_placeholder: final_data[position:position + batch_size],cnn.labels_placeholder: final_labels[position:position + batch_size]})
+            saver.save(sess, 'my_test_model', global_step=2000)
             if done_batches % 200 == 0:
-                print(stuff, 'on epoch:', done_epochs, "accuracy: ",stuff )
-        print(sess.run(cnn.choice, feed_dict={cnn.image_placeholder: test_img}))
+                print(stuff, 'on epoch:', done_epochs, "accuracy: ",stuff)
+        answer = sess.run(cnn.choice, feed_dict={cnn.image_placeholder: test_img})
+        ans1 = str(answer)
+        ans2 = ans1.strip('[')
+        ans3 = ans2.strip(']')
+        print(ans3, ans_to_text.get(int(ans3)))
