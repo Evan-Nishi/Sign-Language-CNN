@@ -9,54 +9,29 @@ import matplotlib.pyplot as plt
 
 tf.reset_default_graph()
 
-data = pd.read_csv('sign_mnist_train.csv', skiprows=1)
-test_data = pd.read_csv('sign_mnist_test.csv',skiprows=1)
+data = pd.read_csv('sign_mnist_train.csv')
+test_data = pd.read_csv('sign_mnist_test.csv')
 
 final_test_data = test_data.iloc[:, 1:].values
 final_test_labels = test_data.iloc[:, :1].values.flatten()
 final_data = data.iloc[:, 1:].values
 final_labels = data.iloc[:, :1].values.flatten()
-print(final_labels)
-print(final_data)
-print(final_test_labels)
-print(final_test_data)
 
-'''
-step1 = np.asarray(data.head(7))
-print(step1.shape)
-import matplotlib.pyplot as plt
-step2 = step1[6:7, 1:]
-print(step2)
-done = step2.reshape(28,28)
-plt.imshow(done)
-plt.show()
+final_data1 = data.iloc[:, :].values
+print(final_data1[1:2, :])
+print(final_data[1:2, :])
 
-#from the kaggle demo===================================================================================================
-def change_batch (batch_size, data, final_labels):
-    index = np.arange(0, len(data))
-    np.random.shuffle(index)
-    array_index = np.array(index[:batch_size])
-    data_shuffle = [data[num] for num in array_index]
-    label_shuffle = [final_labels[num] for num in array_index]
-    print(np.asarray(data_shuffle))
-    print(np.asarray(label_shuffle))
-    
-change_batch(100,final_data,final_labels)
-
-sess.run((TheActualNetwork.train_operation, TheActualNetwork.accuracy_op), feed_dict={TheActualNetwork.input_layer: final_data[position:position + batch_size],TheActualNetwork.label_placeholder: final_test_labels[position:position + batch_size]})
-#=======================================================================================================================
-'''
-
+#image height/width and other vars
 h = 28
 w = 28
-epochs = 5000
+steps = 20000
 batch_size = 32
 num_classes = 26
 color_channels = 1
 final_data = final_data.reshape(-1, h, w, 1)
 final_test_data = (-1, h, w, 1)
 test_img = final_data[1:2, :]
-
+epochs = 70
 
 
 class TheActualNetwork:
@@ -75,7 +50,7 @@ class TheActualNetwork:
         self.accuracy, self.accuracy_op = tf.metrics.accuracy(self.labels_placeholder, self.choice)
         one_hot_labels = tf.one_hot(indices=tf.cast(self.labels_placeholder, dtype=tf.int32), depth=num_classes)
         self.loss = tf.losses.softmax_cross_entropy(onehot_labels=one_hot_labels, logits=outputs)
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate=1e-2)
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.00001)
         self.train_operation = optimizer.minimize(loss=self.loss, global_step=tf.train.get_global_step())
 
 
@@ -85,8 +60,16 @@ cnn = TheActualNetwork(28, 28, 1, 26)
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     sess.run(tf.local_variables_initializer())
-    position = 0
-    while position < epochs:
-        print(sess.run((cnn.train_operation, cnn.accuracy_op), feed_dict={cnn.image_placeholder: final_data[position:position + batch_size], cnn.labels_placeholder: final_labels[position:position + batch_size]}))
-        position += batch_size
-    print(sess.run(cnn.choice, feed_dict={cnn.image_placeholder: test_img}))
+    done_epochs = 0
+    for epoch in range(epochs):
+        position = 0
+        done_epochs += 1
+        done_batches = 0
+        print("Epoch #", done_epochs)
+        while position < steps:
+            done_batches += 1
+            position += batch_size
+            stuff = sess.run((cnn.train_operation, cnn.accuracy_op), feed_dict={cnn.image_placeholder: final_data[position:position + batch_size],cnn.labels_placeholder: final_labels[position:position + batch_size]})
+            if done_batches % 200 == 0:
+                print(stuff, 'on epoch:', done_epochs, "accuracy: ",stuff )
+        print(sess.run(cnn.choice, feed_dict={cnn.image_placeholder: test_img}))
