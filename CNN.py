@@ -44,9 +44,9 @@ class TheActualNetwork:
         one_flat_boi = tf.layers.flatten(pool_layer1)
         dense_layer = tf.layers.dense(one_flat_boi, 1024, activation=tf.nn.relu)
         dropout_layer = tf.layers.dropout(dense_layer, rate=0.4, training=True)
-        outputs = tf.layers.dense(dropout_layer, num_classes)
+        outputs = tf.layers.dense(dropout_layer, num_classes, name="dense_layer")
 
-        self.choice = tf.argmax(outputs, axis=1)
+        self.choice = tf.argmax(outputs, axis=1, name="final_answer")
         self.probability = tf.nn.softmax(outputs)
         self.accuracy, self.accuracy_op = tf.metrics.accuracy(self.labels_placeholder, self.choice)
         one_hot_labels = tf.one_hot(indices=tf.cast(self.labels_placeholder, dtype=tf.int32), depth=num_classes)
@@ -58,7 +58,7 @@ class TheActualNetwork:
 cnn = TheActualNetwork(28, 28, 1, 26)
 
 
-ans_to_text = {1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f', 7: 'g', 8: 'h', 9: 'i', 10: 'j', 11: 'k', 12: 'l', 13: 'm', 14: 'n', 15: 'o', 16: 'p', 17: 'q', 18: 'r', 19: 's', 20: 't', 21: 'u', 22: 'v', 23: 'w', 24: 'x', 25: 'y', 26: 'z' }
+ans_to_text = {1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f', 7: 'g', 8: 'h', 9: 'i', 10: 'j', 11: 'k', 12: 'l', 13: 'm', 14: 'n', 15: 'o', 16: 'p', 17: 'q', 18: 'r', 19: 's', 20: 't', 21: 'u', 22: 'v', 23: 'w', 24: 'x', 25: 'y', 26: 'z'}
 nums_keys = ans_to_text.keys()
 
 
@@ -84,3 +84,4 @@ with tf.Session() as sess:
         ans2 = ans1.strip('[')
         ans3 = ans2.strip(']')
         print(ans3, ans_to_text.get(int(ans3)))
+
