@@ -1,25 +1,41 @@
+import tensorflow as tf
+import os
 import cv2
-import tkinter as tk
-
-cap = cv2.VideoCapture(0)
+import time
 
 
-def cap_img():
-    ret, frame = cap.read()
-    gray_scale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    resized_img = cv2.resize(gray_scale,(28,28))
-    cv2.imwrite('new_img.jpg',resized_img )
+img_done = cv2.imread('new_img.jpg')
+px = img_done[:]
+px_done1 = px[:, :, :1]
+px_done = px_done1.reshape(1, 28, 28, 1)
 
+with tf.Session() as sess:
+    new_saver = tf.train.import_meta_graph('my_test_model-2000.meta')
+    new_saver.restore(sess, tf.train.latest_checkpoint('./'))
+    graph = tf.get_default_graph()
+    graph = tf.get_default_graph()
 
-root = tk.Tk()
-frame = tk.Frame(root)
-frame.pack()
+    input_x = graph.get_tensor_by_name("final_data:0")
+    result = graph.get_tensor_by_name("final_answer:0")
 
-button = tk.Button(frame, text="QUIT", fg="red", command=quit)
-button.pack(side=tk.LEFT)
-title = tk.Button(frame, text="Click the button to take a picture!!!", command=cap_img())
-title.pack(side=tk.LEFT)
+    feed_dict = {input_x: px_done}
 
-root.mainloop()
-cap.release()
-cv2.destroyAllWindows()
+    predictions = result.eval(feed_dict=feed_dict)
+
+ans_to_text = {1: 'a', 2: 'b', 3: 'c', 4: 'd', 5: 'e', 6: 'f', 7: 'g', 8: 'h', 9: 'i', 10: 'j', 11: 'k', 12: 'l', 13: 'm', 14: 'n', 15: 'o', 16: 'p', 17: 'q', 18: 'r', 19: 's', 20: 't', 21: 'u', 22: 'v', 23: 'w', 24: 'x', 25: 'y', 26: 'z'}
+nums_keys = ans_to_text.keys()
+ans1 = str(predictions)
+ans2 = ans1.strip('[')
+ans3 = ans2.strip(']')
+
+index_num = int(ans3)
+print(ans_to_text.get(index_num))
+
+time.sleep(3)
+delete_input = input('do you want to delete the jpg file? ')
+
+if 'y' in delete_input:
+    os.remove('new_img.jpg')
+    print('file deleted')
+else:
+    print('file kept')
