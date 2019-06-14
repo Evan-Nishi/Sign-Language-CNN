@@ -1,30 +1,25 @@
-import tensorflow as tf
-import os
 import cv2
+import tkinter as tk
+
+cap = cv2.VideoCapture(0)
 
 
-img_done = cv2.imread('new_img.jpg')
-px = img_done[:]
-px_done1 = px[:, :, :1]
-px_done = px_done1.reshape(1, 28, 28, 1)
+def cap_img():
+    ret, frame = cap.read()
+    gray_scale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    resized_img = cv2.resize(gray_scale,(28,28))
+    cv2.imwrite('new_img.jpg',resized_img )
 
-with tf.Session() as sess:
-    new_saver = tf.train.import_meta_graph('my_test_model-2000.meta')
-    new_saver.restore(sess, tf.train.latest_checkpoint('./'))
-    graph = tf.get_default_graph()
-    graph = tf.get_default_graph()
 
-    input_x = graph.get_tensor_by_name("final_data:0")
-    result = graph.get_tensor_by_name("final_answer:0")
+root = tk.Tk()
+frame = tk.Frame(root)
+frame.pack()
 
-    feed_dict = {input_x: px_done}
+button = tk.Button(frame, text="QUIT", fg="red", command=quit)
+button.pack(side=tk.LEFT)
+title = tk.Button(frame, text="Click the button to take a picture!!!", command=cap_img())
+title.pack(side=tk.LEFT)
 
-    predictions = result.eval(feed_dict=feed_dict)
-    print(predictions)
-delete_input = input('do you want to delete the jpg file? ')
-
-if 'y' in delete_input:
-    os.remove('new_img.jpg')
-    print('file deleted')
-else:
-    print('file kept')
+root.mainloop()
+cap.release()
+cv2.destroyAllWindows()
