@@ -85,3 +85,4 @@ with tf.Session() as sess:
         ans3 = ans2.strip(']')
         print(ans3, ans_to_text.get(int(ans3)))
 
+
