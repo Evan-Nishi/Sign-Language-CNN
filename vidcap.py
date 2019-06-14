@@ -1,7 +1,4 @@
 import cv2
-import PIL
-import os
-import numpy as np
 import tkinter as tk
 
 cap = cv2.VideoCapture(0)
